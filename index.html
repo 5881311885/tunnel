@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>3D Tunnel — CSS + HTML</title>
+<style>
+  :root{
+    --speed: 6s;           /* how fast the tunnel moves (shorter = faster) */
+    /* Replace these with your PNG paths or URLs */
+    --tex-top: url("top.png");
+    --tex-left: url("left.png");
+    --tex-bottom: url("bottom.png");
+
+    --tunnel-size: 75vmin; /* size of the view box (responsive) */
+    --depth: 900px;        /* perceived depth of the tunnel */
+    --perspective: 900px;  /* how strong the perspective is */
+  }
+
+  /* page layout */
+  html,body{
+    height:100%;
+    margin:0;
+    background:#020204;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* scene with perspective */
+  .scene{
+    width:var(--tunnel-size);
+    height:calc(var(--tunnel-size) * 0.6);
+    position:relative;
+    perspective: var(--perspective);
+    perspective-origin: 50% 50%;
+    overflow:visible;
+  }
+
+  .viewer{
+    width:100%;
+    height:100%;
+    transform-style: preserve-3d;
+    position:relative;
+  }
+
+  /* subtle rotation of the whole tunnel so walls are visible */
+  .tunnel-core{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:120%;
+    height:120%;
+    transform-style:preserve-3d;
+    transform: translate(-50%,-50%) translateZ(0);
+  }
+
+  /* Generic wall style (each wall is a large plane textured with PNG) */
+  .wall{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform-style:preserve-3d;
+    transform-origin: center center;
+    width:220%;
+    height:220%;
+    background-repeat: repeat;
+    background-size: auto 200%; /* scale vertical so that it repeats nicely */
+    box-shadow: inset 0 0 120px rgba(0,0,0,0.55);
+    backface-visibility: hidden;
+    filter: contrast(1.05) saturate(1.05);
+  }
+
+  /* animate the background-position to create motion down the tunnel */
+  .wall::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-repeat:repeat;
+    background-size: auto 200%;
+    z-index:0;
+    opacity:1;
+    will-change: background-position;
+    animation: flow linear infinite;
+    /* animation timing will be set per-wall to allow different feels */
+  }
+
+  /* Top wall (ceiling) — rotate towards viewer on X axis */
+  .wall.top{
+    transform: translate(-50%,-50%) rotateX(65deg) translateZ(var(--depth));
+  }
+  .wall.top::before{
+    background-image: var(--tex-top);
+    animation-duration: var(--speed);
+    animation-direction: normal;
+    background-position: center 0%;
+  }
+
+  /* Left wall (side) — rotate on Y axis */
+  .wall.left{
+    transform: translate(-50%,-50%) rotateY(-70deg) translateZ(var(--depth));
+    background-position: left center;
+  }
+  .wall.left::before{
+    background-image: var(--tex-left);
+    animation-duration: calc(var(--speed) * 0.95);
+    animation-direction: normal;
+    background-position: center 0%;
+  }
+
+  /* Bottom wall (floor) — rotate away from viewer on X */
+  .wall.bottom{
+    transform: translate(-50%,-50%) rotateX(-75deg) translateZ(var(--depth));
+  }
+  .wall.bottom::before{
+    background-image: var(--tex-bottom);
+    animation-duration: calc(var(--speed) * 1.06);
+    animation-direction: normal;
+    background-position: center 0%;
+  }
+
+  /* a faint right wall so the tunnel looks enclosed (no texture necessary) */
+  .wall.right{
+    transform: translate(-50%,-50%) rotateY(70deg) translateZ(var(--depth));
+    width:200%;
+    height:200%;
+    background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.6));
+    opacity:0.6;
+  }
+
+  /* animated flow (moves background vertically to simulate forward motion) */
+  @keyframes flow{
+    from { background-position: center 0%; }
+    to   { background-position: center 200%; } /* moves the texture downward */
+  }
+
+  /* small caret / HUD to center the scene */
+  .hud{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%,-50%);
+    pointer-events:none;
+    z-index:30;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.85);
+    box-shadow:0 0 18px rgba(255,255,255,0.08);
+  }
+
+  /* optional subtle rotate for extra depth */
+  @media (prefers-reduced-motion: no-preference){
+    .tunnel-core{
+      animation: slow-tilt 14s linear infinite;
+    }
+    @keyframes slow-tilt{
+      0%{ transform: translate(-50%,-50%) translateZ(0) rotateZ(0deg) rotateX(0deg); }
+      50%{ transform: translate(-50%,-50%) translateZ(0) rotateZ(1.3deg) rotateX(.6deg); }
+      100%{ transform: translate(-50%,-50%) translateZ(0) rotateZ(0deg) rotateX(0deg); }
+    }
+  }
+
+  /* responsiveness: reduce depth on small screens */
+  @media (max-width:600px){
+    :root{ --depth: 520px; --tunnel-size: 92vmin; --perspective:640px; }
+  }
+
+  /* short instructions overlay (only visible on hover or narrow screens) */
+  .note{
+    position:fixed;
+    left:12px;
+    bottom:12px;
+    color:#ddd;
+    font-size:12px;
+    background:rgba(0,0,0,0.45);
+    padding:8px 10px;
+    border-radius:8px;
+  }
+</style>
+</head>
+<body>
+  <div class="scene" aria-hidden="true">
+    <div class="viewer">
+      <div class="tunnel-core">
+        <!-- top, left, bottom walls textured with PNGs -->
+        <div class="wall top" aria-hidden="true"></div>
+        <div class="wall left" aria-hidden="true"></div>
+        <div class="wall bottom" aria-hidden="true"></div>
+
+        <!-- optional right wall to enclose the tunnel -->
+        <div class="wall right" aria-hidden="true"></div>
+
+        <!-- small center HUD dot -->
+        <div class="hud" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    Replace <code>top.png</code>, <code>left.png</code>, <code>bottom.png</code> in the CSS <strong>:root</strong> with your PNG URLs.
+  </div>
+</body>
+</html>
