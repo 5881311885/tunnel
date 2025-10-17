@@ -5,12 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>3D Tunnel — CSS + HTML</title>
 <style>
-  :root{
-    --speed: 6s;           /* how fast the tunnel moves (shorter = faster) */
-    /* Replace these with your PNG paths or URLs */
-    --tex-top: url("top.png");
-    --tex-left: url("left.png");
-    --tex-bottom: url("bottom.png");
+:root{
+  --top-img:url("./top.png");
+  --left-img:url("./left.png");
+  --bottom-img:url("./bottom.png");
+  --depth:800px;
+  --speed:8s;
+}
+
+  .wall.top{
+  background:red;
+  transform:translate(-50%,-50%) rotateX(70deg) translateZ(var(--depth));
+}
+
 
     --tunnel-size: 75vmin; /* size of the view box (responsive) */
     --depth: 900px;        /* perceived depth of the tunnel */
@@ -30,14 +37,20 @@
   }
 
   /* scene with perspective */
-  .scene{
-    width:var(--tunnel-size);
-    height:calc(var(--tunnel-size) * 0.6);
-    position:relative;
-    perspective: var(--perspective);
-    perspective-origin: 50% 50%;
-    overflow:visible;
-  }
+.scene{
+  width:100vw;
+  height:100vh;
+  perspective:1000px;
+  background:black;
+}
+
+.tunnel{
+  width:100%;
+  height:100%;
+  transform-style:preserve-3d;
+  transform: rotateX(0deg) rotateY(0deg) translateZ(-400px);
+}
+
 
   .viewer{
     width:100%;
