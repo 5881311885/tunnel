@@ -215,5 +215,41 @@
   <div class="note">
     Replace <code>top.png</code>, <code>left.png</code>, <code>bottom.png</code> in the CSS <strong>:root</strong> with your PNG URLs.
   </div>
+
+
+
+
+  <!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,body{margin:0;height:100%;background:black;overflow:hidden;}
+.scene{width:100vw;height:100vh;perspective:800px;}
+.tunnel{width:100%;height:100%;transform-style:preserve-3d;position:relative;}
+.wall{
+  position:absolute;left:50%;top:50%;
+  width:200%;height:200%;
+  transform-origin:center;
+  box-shadow:inset 0 0 100px rgba(0,0,0,0.5);
+  animation:move 8s linear infinite;
+}
+.wall.top{background:red;transform:translate(-50%,-50%) rotateX(70deg) translateZ(800px);}
+.wall.left{background:blue;transform:translate(-50%,-50%) rotateY(-70deg) translateZ(800px);}
+.wall.bottom{background:green;transform:translate(-50%,-50%) rotateX(-70deg) translateZ(800px);}
+@keyframes move{from{background-position:0 0;}to{background-position:0 200%;}}
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="tunnel">
+    <div class="wall top"></div>
+    <div class="wall left"></div>
+    <div class="wall bottom"></div>
+  </div>
+</div>
+</body>
+</html>
+
 </body>
 </html>
